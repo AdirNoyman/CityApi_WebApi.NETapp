@@ -17,19 +17,10 @@ namespace CityInfo.API.Services
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<IEnumerable<City>> GetCitiesAsync()
+        public async Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(string? name, string? searchQuery, int pageNumber, int pageSize)
         {
-            return await _context.Cities.OrderBy(c => c.Name).ToListAsync();
-        }
 
-        public async Task<IEnumerable<City>> GetCitiesAsync(string? name, string? searchQuery)
-        {
-            if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(searchQuery))
-            {
-                return await GetCitiesAsync();
-            }
-
-            // collection of cities to filter and search through
+            // collection of cities to start from to filter and search through
             var collection = _context.Cities as IQueryable<City>;
 
             // Filter
@@ -46,7 +37,18 @@ namespace CityInfo.API.Services
                 collection = collection.Where(a => a.Name.Contains(searchQuery) || (a.Description != null && a.Description.Contains(searchQuery)));
             }
 
-            return await collection.OrderBy(c => c.Name).ToListAsync();
+            var totalItemCount = await collection.CountAsync();
+
+            // pageNumber is the REQUESTED page number
+            var paginationMetadata = new PaginationMetadata(totalItemCount, pageSize, pageNumber);
+
+            var collectionToReturn = await collection.OrderBy(c => c.Name)
+            .Skip(pageSize * (pageNumber - 1))
+            .Take(pageSize)
+            .ToListAsync();
+
+            // return a Tuple
+            return (collectionToReturn, paginationMetadata);
 
         }
 
