@@ -19,6 +19,7 @@ namespace CityInfo.API.Services
 
         void DeletePointOfInterest(PointOfInterest pointOfInterest);
 
+        Task<bool> CityNameMatchesCityId(string? cityName, int cityId);
         // Persist changes made in the repository (in memory) to the data base 
         Task<bool> SaveChangesAsync();
     }

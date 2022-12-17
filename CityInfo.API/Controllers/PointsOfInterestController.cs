@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace CityInfo.API.Controllers
 {
     [Route("api/cities/{cityId}/pointsofinterest")]
-    [Authorize]
+    [Authorize(Policy = "MustBeFromAntwerp")]
     [ApiController]
     public class PointsOfInterestController : ControllerBase
     {
@@ -32,6 +33,13 @@ namespace CityInfo.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PointOfInterestDto>>> GetPointsOfInterest(int cityId)
         {
+            var cityName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
+
+            if (!await _cityInfoRepository.CityNameMatchesCityId(cityName, cityId))
+            {
+                return Forbid("You are forbidden to this city 🤨");
+            }
+
             if (!await _cityInfoRepository.CityExistAsync(cityId))
             {
                 _logger.LogInformation($"City with id {cityId} was not found when trying to get points of interest");

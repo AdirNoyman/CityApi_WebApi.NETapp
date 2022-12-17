@@ -106,7 +106,7 @@ namespace CityInfo.API.Controllers
                 userName ?? "",
                 "Koko",
                 "Loko",
-                "Tel-Aviv");
+                "New York City");
         }
     }
 }
