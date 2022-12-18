@@ -80,6 +80,17 @@ builder.Services.AddAuthorization(options =>
 }
 );
 
+builder.Services.AddApiVersioning(setupAction =>
+{
+    // Use the default api version if not specified
+    setupAction.AssumeDefaultVersionWhenUnspecified = true;
+    // Default version is set to 1.0
+    setupAction.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    // Show the api version in the output
+    setupAction.ReportApiVersions = true;
+}
+);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
